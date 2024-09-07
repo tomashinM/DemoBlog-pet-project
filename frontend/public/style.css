@@ -1,0 +1,98 @@
+html {
+  position: relative;
+  min-height: 100vh;
+
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "LXGW WenKai Mono TC", sans-serif;
+}
+
+a {
+  text-decoration: none;
+  background-color: transparent;
+  color: #5cb85c;
+}
+
+a:active {
+  outline: 0;
+}
+
+a:hover {
+  outline: 0;
+}
+a:focus,
+a:hover {
+  color: #3d8b3d;
+}
+a:focus {
+  outline: thin dotted;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+ol,
+ul {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.page {
+  margin: 1rem auto;
+}
+.logo {
+  color: #5cb85c;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.post {
+  border: 1px solid #000000;
+  border-radius: 0.25rem;
+  background-color: #cdffa4;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  border: black 1px solid;
+}
+.likes {
+  color: #5cb85c;
+  border: 1px solid #5cb85c;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.banner {
+  background-color: #333;
+  color: white;
+  padding: 2rem 0;
+}
+
+.comment {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.25rem;
+}
+
+.error-messages {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #eed3d7;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 991.98px) {
+  .navbar-nav {
+    padding-top: 1rem;
+  }
+  .nav-item {
+    text-align: center;
+  }
+}

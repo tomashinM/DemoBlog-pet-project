@@ -1,0 +1,286 @@
+services:
+  vue:
+    build: ./frontend
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - django-static:/usr/src/app/static
+    depends_on:
+      - django
+
+  telegram:
+    build: ./telegrambot
+    command: python bot.py
+    volumes:
+      - ./telegrambot:/app
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+    restart: always
+    depends_on:
+      - django
+
+  django:
+    image: backend-img
+    env_file:
+      - .env
+    build: ./backend
+    restart: always
+    command: /app/docker-entrypoint.sh
+    volumes:
+      - django-static:/app/static
+      - certs:/app/certs
+      - ./backend:/app
+    tty: true
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      es01:
+        condition: service_healthy
+    ports:
+      - 8000:8000
+
+  postgres:
+    image: postgres:14-alpine
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+
+  redis:
+    image: redis:7.2.5-alpine
+    restart: always
+    volumes:
+      - redis-data:/data
+
+  celery-worker1:
+    image: backend-img
+    env_file:
+      - .env
+    restart: always
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - certs:/app/certs
+      - email:/app-messages
+    tty: true
+    depends_on:
+      - django
+
+  celery-worker2:
+    image: backend-img
+    env_file:
+      - .env
+    restart: always
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - certs:/app/certs
+      - email:/app-messages
+    tty: true
+    depends_on:
+      - django
+
+  flower:
+    image: backend-img
+    env_file:
+      - .env
+    restart: always
+    entrypoint: celery
+    command: -A celery_app.app flower
+    volumes:
+      - ./backend:/app
+    tty: true
+    depends_on:
+      - django
+    ports:
+      - 5555:5555
+
+  locust:
+    image: backend-img
+    env_file:
+      - .env
+    restart: always
+    command: locust
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - django
+    ports:
+      - 8089:8089
+
+  prometheus:
+    image: prom/prometheus
+    restart: always
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    depends_on:
+      - django
+
+  grafana:
+    image: grafana/grafana-enterprise
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SERVER_DOMAIN=${DOMAIN_NAME}
+    depends_on:
+      - prometheus
+
+  elk-setup:
+    image: elasticsearch:8.14.3
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: es01\n"\
+          "    dns:\n"\
+          "      - es01\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          "  - name: kibana\n"\
+          "    dns:\n"\
+          "      - kibana\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${ELASTIC_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  es01:
+    depends_on:
+      elk-setup:
+        condition: service_healthy
+    image: elasticsearch:8.14.3
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - es1-data:/usr/share/elasticsearch/data
+    environment:
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+      - discovery.type=single-node
+      - node.name=es01
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es01/es01.key
+      - xpack.security.http.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es01/es01.key
+      - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=basic
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana:
+    depends_on:
+      es01:
+        condition: service_healthy
+    image: kibana:8.14.3
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibana-data:/usr/share/kibana/data
+    ports:
+      - 5601:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://es01:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - XPACK_SECURITY_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_REPORTING_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  logstash:
+    image: logstash:8.14.3
+    user: root
+    volumes:
+      - logstash-data:/usr/share/logstash/data
+      - certs:/usr/share/logstash/certs
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    environment:
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+      - NODE_NAME="logstash"
+      - xpack.monitoring.enabled=false
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://es01:9200
+    command: logstash -f /usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      es01:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  django-static:
+  redis-data:
+  email:
+  grafana-data:
+  prometheus-data:
+  es1-data:
+  certs:
+  logstash-data:
+  kibana-data:

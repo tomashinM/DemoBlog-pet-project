@@ -1,0 +1,13 @@
+__pycache__
+.vscode
+.venv
+.env
+!/frontend/.env
+.mypy_cache
+.ruff_cache
+/backend/*/migrations
+/backend/static
+/frontend/node_modules
+/frontend/dist
+/frontend/package-lock.json
+/telegrambot/blogapi

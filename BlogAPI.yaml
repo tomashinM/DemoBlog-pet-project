@@ -1,0 +1,1105 @@
+openapi: 3.0.3
+info:
+  title: BlogAPI
+  version: 1.0.0
+  description: API of blog
+paths:
+  /articles:
+    get:
+      operationId: articlesList
+      description: API endpoints for articles
+      parameters:
+      - in: query
+        name: author
+        schema:
+          type: string
+      - in: query
+        name: favorited
+        schema:
+          type: string
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: ordering
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -created_at
+            - -favoritesCount
+            - -updated_at
+            - created_at
+            - favoritesCount
+            - updated_at
+        description: |-
+          Ordering
+
+          * `created_at` - Created at
+          * `-created_at` - Created at (descending)
+          * `updated_at` - Updated at
+          * `-updated_at` - Updated at (descending)
+          * `favoritesCount` - likes
+          * `-favoritesCount` - likes_desc
+        explode: false
+        style: form
+      - in: query
+        name: tag
+        schema:
+          type: string
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArticleList'
+          description: ''
+    post:
+      operationId: articlesCreate
+      description: Create article
+      tags:
+      - articles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/articleWrappedArticleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/articleWrappedArticle'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /articles/{slug}:
+    get:
+      operationId: articlesRetrieve
+      description: Get an article
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/articleWrappedArticle'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+    put:
+      operationId: articlesUpdate
+      description: Update an article
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/articleWrappedArticleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/articleWrappedArticle'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+    delete:
+      operationId: articlesDestroy
+      description: API endpoints for articles
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /articles/{slug}/comments:
+    get:
+      operationId: articlesCommentsList
+      description: List comments for an article
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/commentsWrappedCommentList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+    post:
+      operationId: articlesCommentsCreate
+      description: Create new comment for an article
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/commentWrappedCommentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/commentWrappedComment'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /articles/{slug}/comments/{id}:
+    delete:
+      operationId: articlesCommentsDestroy
+      description: API endpoints for comments
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this comment.
+        required: true
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /articles/{slug}/favorite:
+    post:
+      operationId: articlesFavoriteCreate
+      description: Like/Unlike an article
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/articleWrappedArticle'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+    delete:
+      operationId: articlesFavoriteDestroy
+      description: Like/Unlike an article
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/articleWrappedArticle'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /articles/feed:
+    get:
+      operationId: articlesFeedList
+      description: Articles feed
+      parameters:
+      - in: query
+        name: author
+        schema:
+          type: string
+      - in: query
+        name: favorited
+        schema:
+          type: string
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: ordering
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -created_at
+            - -favoritesCount
+            - -updated_at
+            - created_at
+            - favoritesCount
+            - updated_at
+        description: |-
+          Ordering
+
+          * `created_at` - Created at
+          * `-created_at` - Created at (descending)
+          * `updated_at` - Updated at
+          * `-updated_at` - Updated at (descending)
+          * `favoritesCount` - likes
+          * `-favoritesCount` - likes_desc
+        explode: false
+        style: form
+      - in: query
+        name: tag
+        schema:
+          type: string
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArticleList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /profiles/{username}:
+    get:
+      operationId: profilesRetrieve
+      description: Get profile of a user
+      parameters:
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - profiles
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profileWrappedProfile'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /profiles/{username}/follow:
+    post:
+      operationId: profilesFollowCreate
+      description: Follow/Unfollow a user
+      parameters:
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - profiles
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profileWrappedProfile'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+    delete:
+      operationId: profilesFollowDestroy
+      description: Follow/Unfollow a user
+      parameters:
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - profiles
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profileWrappedProfile'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /search:
+    get:
+      operationId: searchList
+      description: Search for articles
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      tags:
+      - search
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArticleList'
+          description: ''
+  /search/{slug}:
+    get:
+      operationId: searchRetrieve
+      description: Base document ViewSet.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - search
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+          description: ''
+  /tags:
+    get:
+      operationId: tagsRetrieve
+      description: List of most popular tags
+      tags:
+      - tags
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /user:
+    get:
+      operationId: userRetrieve
+      description: Access to current user info
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userWrappedUser'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+    put:
+      operationId: userUpdate
+      description: Update current user info
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userWrappedUserPartialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userWrappedUser'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /users:
+    post:
+      operationId: usersCreate
+      description: Registration endpoint
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userWrappedUserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userWrappedUser'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /users/login:
+    post:
+      operationId: usersLoginCreate
+      description: Login endpoint
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userWrappedLoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userWrappedUser'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /users/verify/{token}:
+    get:
+      operationId: usersVerifyRetrieve
+      description: Verification endpoint
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+components:
+  schemas:
+    Article:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+        tagList:
+          type: array
+          items:
+            type: string
+        author:
+          allOf:
+          - $ref: '#/components/schemas/Profile'
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        favorited:
+          type: boolean
+          readOnly: true
+        favoritesCount:
+          type: integer
+          readOnly: true
+      required:
+      - author
+      - body
+      - createdAt
+      - description
+      - favorited
+      - favoritesCount
+      - slug
+      - tagList
+      - title
+      - updatedAt
+    ArticleRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          minLength: 1
+          maxLength: 255
+        body:
+          type: string
+          minLength: 1
+        tagList:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+      - body
+      - description
+      - tagList
+      - title
+    BodyError:
+      type: object
+      properties:
+        body:
+          type: array
+          items:
+            type: string
+      required:
+      - body
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        body:
+          type: string
+        author:
+          allOf:
+          - $ref: '#/components/schemas/Profile'
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author
+      - body
+      - createdAt
+      - id
+      - updatedAt
+    CommentRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+      required:
+      - body
+    Error:
+      type: object
+      properties:
+        errors:
+          $ref: '#/components/schemas/BodyError'
+      required:
+      - errors
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+    PaginatedArticleList:
+      type: object
+      required:
+      - articles
+      - articlesCount
+      properties:
+        articlesCount:
+          type: integer
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+    PatchedUserRequest:
+      type: object
+      properties:
+        bio:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        notifications:
+          type: boolean
+    Profile:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        bio:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        following:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - following
+      - username
+    ProfileRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        bio:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+      required:
+      - email
+      - username
+    Tag:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+      - tags
+    User:
+      type: object
+      properties:
+        token:
+          type: string
+          readOnly: true
+        bio:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        username:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        notifications:
+          type: boolean
+      required:
+      - email
+      - token
+      - username
+    UserRequest:
+      type: object
+      properties:
+        bio:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        notifications:
+          type: boolean
+      required:
+      - email
+      - password
+      - username
+    articleWrappedArticle:
+      type: object
+      properties:
+        article:
+          $ref: '#/components/schemas/Article'
+      required:
+      - article
+    articleWrappedArticleRequest:
+      type: object
+      properties:
+        article:
+          $ref: '#/components/schemas/ArticleRequest'
+      required:
+      - article
+    commentWrappedComment:
+      type: object
+      properties:
+        comment:
+          $ref: '#/components/schemas/Comment'
+      required:
+      - comment
+    commentWrappedCommentRequest:
+      type: object
+      properties:
+        comment:
+          $ref: '#/components/schemas/CommentRequest'
+      required:
+      - comment
+    commentsWrappedCommentList:
+      type: object
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+      required:
+      - comments
+    profileWrappedProfile:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
+      required:
+      - profile
+    userWrappedLoginRequest:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/LoginRequest'
+      required:
+      - user
+    userWrappedUser:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+      - user
+    userWrappedUserPartialRequest:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/PatchedUserRequest'
+      required:
+      - user
+    userWrappedUserRequest:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserRequest'
+      required:
+      - user
+  securitySchemes:
+    jwtAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
+servers:
+- url: /api/
