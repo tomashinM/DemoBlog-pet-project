@@ -5,10 +5,7 @@ services:
       - .env
     build: ./backend
     restart: always
-    tty: true
-    command: |
-      python manage.py makemigrations
-      python manage.py migrate
+    command: python manage.py runserver 0.0.0.0:8000
     depends_on:
       - postgres
       - redis

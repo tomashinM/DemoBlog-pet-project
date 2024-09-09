@@ -19,14 +19,29 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Start project
+      - name: Build the Docker images
         run: |
           mv .env.example .env
           docker compose -f docker-compose.ci.yml build
-          docker compose -f docker-compose.ci.yml up -d --wait
 
-      - name: Run tests
-        run: docker exec -t demoblog-pet-project-django-1 python manage.py test --keepdb
+      - name: Start PostgreSQL service
+        run: docker compose -f docker-compose.ci.yml up -d postgres
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          docker compose -f docker-compose.ci.yml run django \
+            sh -c 'while ! nc -z db 5432; do sleep 1; done; echo "PostgreSQL is ready"'
+
+      - name: Run Django migrations
+        run: |
+          docker compose -f docker-compose.ci.yml run django python manage.py makemigrations
+          docker compose -f docker-compose.ci.yml run django python manage.py migrate
+
+      - name: Run Django tests
+        run: docker compose -f docker-compose.ci.yml run django python manage.py test
+
+      - name: Stop containers
+        run: docker compose -f docker-compose.ci.yml down
 
   cd:
     runs-on: ubuntu-latest
