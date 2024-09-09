@@ -31,6 +31,9 @@ jobs:
       - name: Prepare env
         run: mv .env.example .env
 
+      - name: Update pip
+        run: pip install --upgrade pip
+
       - name: Django tests
         uses: UKnowWhoIm/django-test-action@v0.6
         with:
