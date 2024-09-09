@@ -1,0 +1,43 @@
+services:
+  django:
+    image: backend-img
+    env_file:
+      - .env
+    build: ./backend
+    restart: always
+    command: /app/docker-entrypoint.sh
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+
+  redis:
+    image: redis:7.2.5-alpine
+    restart: always
+
+  celery-worker1:
+    image: backend-img
+    env_file:
+      - .env
+    restart: always
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    depends_on:
+      - django
+
+  celery-worker2:
+    image: backend-img
+    env_file:
+      - .env
+    restart: always
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    depends_on:
+      - django
