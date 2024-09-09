@@ -5,7 +5,9 @@ services:
       - .env
     build: ./backend
     restart: always
-    command: python manage.py test --keepdb
+    command: |
+      python manage.py makemigrations
+      python manage.py migrate
     depends_on:
       - postgres
       - redis
