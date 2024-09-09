@@ -23,10 +23,7 @@ jobs:
         run: |
           mv .env.example .env
           docker compose -f docker-compose.ci.yml build
-          docker compose -f docker-compose.ci.yml up -d
-
-      - name: Run tests
-        run: docker exec -it demoblog-pet-project-django-1 python manage.py test --keepdb
+          docker compose -f docker-compose.ci.yml up
 
   cd:
     runs-on: ubuntu-latest
