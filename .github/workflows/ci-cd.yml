@@ -25,20 +25,13 @@ jobs:
           docker compose -f docker-compose.ci.yml build
 
       - name: Start PostgreSQL service
-        run: docker compose -f docker-compose.ci.yml up -d postgres
+        run: docker compose -f docker-compose.ci.yml up -d --wait
 
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          docker compose -f docker-compose.ci.yml run django \
-            sh -c 'while ! nc -z db 5432; do sleep 1; done; echo "PostgreSQL is ready"'
-
-      - name: Run Django migrations
+      - name: Run Django tests
         run: |
           docker compose -f docker-compose.ci.yml run django python manage.py makemigrations
           docker compose -f docker-compose.ci.yml run django python manage.py migrate
-
-      - name: Run Django tests
-        run: docker compose -f docker-compose.ci.yml run django python manage.py test
+          docker compose -f docker-compose.ci.yml run django python manage.py test
 
       - name: Stop containers
         run: docker compose -f docker-compose.ci.yml down
