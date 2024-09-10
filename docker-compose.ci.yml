@@ -1,5 +1,6 @@
 services:
   django:
+    container_name: django
     image: backend-img
     env_file:
       - .env
@@ -22,17 +23,7 @@ services:
     image: redis:7.2.5-alpine
     restart: always
 
-  celery-worker1:
-    image: backend-img
-    env_file:
-      - .env
-    restart: always
-    entrypoint: celery
-    command: -A celery_app.app worker --loglevel=info
-    depends_on:
-      - django
-
-  celery-worker2:
+  celery-worker:
     image: backend-img
     env_file:
       - .env

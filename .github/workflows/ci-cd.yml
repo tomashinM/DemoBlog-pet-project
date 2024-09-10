@@ -24,14 +24,14 @@ jobs:
           mv .env.example .env
           docker compose -f docker-compose.ci.yml build
 
-      - name: Start PostgreSQL service
+      - name: Start Docker Compose
         run: docker compose -f docker-compose.ci.yml up -d --wait
 
       - name: Run Django tests
         run: |
-          docker compose -f docker-compose.ci.yml run django python manage.py makemigrations
-          docker compose -f docker-compose.ci.yml run django python manage.py migrate
-          docker compose -f docker-compose.ci.yml run django python manage.py test
+          docker exec django python manage.py makemigrations
+          docker exec django python manage.py migrate
+          docker exec django python manage.py test
 
       - name: Stop containers
         run: docker compose -f docker-compose.ci.yml down
