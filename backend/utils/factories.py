@@ -31,7 +31,7 @@ class ArticleFactory(factory.django.DjangoModelFactory):
         model = Article
 
     title = factory.LazyFunction(fake.sentence)
-    description = factory.LazyFunction(fake.paragraph)
+    description = factory.LazyFunction(fake.paragraph[:255])
     body = factory.LazyFunction(fake.text)
     author = factory.SubFactory(UserFactory)
 
@@ -40,6 +40,6 @@ class CommentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Comment
 
-    body = factory.LazyFunction(fake.paragraph)
+    body = factory.LazyFunction(fake.paragraph[:255])
     article = factory.SubFactory(ArticleFactory)
     author = factory.SubFactory(UserFactory)
