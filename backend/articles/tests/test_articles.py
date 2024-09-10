@@ -130,7 +130,7 @@ class TestArticleViewSet(TestMixin, APITestCase):
         self.assertEqual(self.article["slug"], "new-title")
         self.assertEqual(self.article["description"], new_data["description"])
         self.assertEqual(self.article["body"], new_data["body"])
-        self.assertEqual(self.article["tags"], new_data["tagList"])
+        self.assertEqual(self.article["tagList"], new_data["tagList"])
 
     def test_update_article_not_owned(self):
         # Arrange
