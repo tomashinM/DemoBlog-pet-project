@@ -226,6 +226,7 @@ LOGGING = {
         },
     },
 }
+SILENCED_SYSTEM_CHECKS = ["cachalot.W001"]
 
 CELERY_BROKER_URL = "redis://redis:6379/0"
 
