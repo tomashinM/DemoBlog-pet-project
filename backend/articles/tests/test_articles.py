@@ -126,12 +126,11 @@ class TestArticleViewSet(TestMixin, APITestCase):
 
         # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.article.title, new_data["title"])
-        self.assertEqual(self.article.slug, "new-title")
-        self.assertEqual(self.article.description, new_data["description"])
-        self.assertEqual(self.article.body, new_data["body"])
-        tags = list(self.article.tags.all().values_list("name", flat=True))
-        self.assertEqual(tags, new_data["tagList"])
+        self.assertEqual(self.article["title"], new_data["title"])
+        self.assertEqual(self.article["slug"], "new-title")
+        self.assertEqual(self.article["description"], new_data["description"])
+        self.assertEqual(self.article["body"], new_data["body"])
+        self.assertEqual(self.article["tags"], new_data["tagList"])
 
     def test_update_article_not_owned(self):
         # Arrange
