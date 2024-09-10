@@ -122,10 +122,10 @@ class TestArticleViewSet(TestMixin, APITestCase):
 
         # Act
         response = self.client.put(url, {"article": new_data})
+        self.article = response.data["article"]
 
         # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.article.refresh_from_db()
         self.assertEqual(self.article.title, new_data["title"])
         self.assertEqual(self.article.slug, "new-title")
         self.assertEqual(self.article.description, new_data["description"])
