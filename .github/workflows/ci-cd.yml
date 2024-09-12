@@ -73,6 +73,10 @@ jobs:
             # Create new .env file
             echo "$ENV_FILE" > .env
 
+            # Generate client libraries
+            docker run --rm -v "${PWD}:/app" openapitools/openapi-generator-cli:v7.7.0 generate -i /app/BlogAPI.yaml -g python -o /app/telegrambot/blogapi
+            docker run --rm -v "${PWD}:/app" node:alpine npx swagger-typescript-api -p /app/BlogAPI.yaml -n api.ts -o /app/frontend/src/services
+
             # Build and start the containers
             docker compose build
             docker compose up -d
