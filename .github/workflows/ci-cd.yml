@@ -77,10 +77,4 @@ jobs:
             docker run --rm -v "~/app:/app" openapitools/openapi-generator-cli:v7.7.0 generate -i /app/BlogAPI.yaml -g python -o /app/telegrambot/blogapi
             docker run --rm -v "~/app:/app" node:alpine npx swagger-typescript-api -p /app/BlogAPI.yaml -n api.ts -o /app/frontend/src/services
 
-            # Build and start the containers
-            docker compose build
-            docker compose up -d
-
-            # Clean up
-            docker system prune -af
           EOF
