@@ -6,8 +6,6 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from config.settings import HOSTNAME
-
 logger = get_task_logger(__name__)
 
 
@@ -43,7 +41,7 @@ def send_verification_email(user_id):
         {
             "user": user,
             "token": str(user.verification_token),
-            "hostname": HOSTNAME,
+            "hostname": os.environ.get("SITE_URL"),
         },
     )
     email.send([user.email])
@@ -61,6 +59,6 @@ def send_new_article_notification(recipient_list, slug):
     email = EmailSender(
         f"{article.author.username} posted new article {article.title}",
         "new_article_notification.html",
-        {"article": article, "hostname": HOSTNAME},
+        {"article": article, "hostname": os.environ.get("SITE_URL")},
     )
     email.send(recipient_list)

@@ -1,7 +1,7 @@
 <template>
   <div class="card my-2">
     <div class="card-body">
-      <h5 class="card-title">ЧИТАЮТ СЕЙЧАС</h5>
+      <h5 class="card-title">Популярные статьи</h5>
       <ol>
         <li v-for="article in articles" :key="article.slug" class="mb-2">
           <div>

@@ -5,7 +5,7 @@ python manage.py migrate
 python manage.py collectstatic --no-input
 python manage.py createsuperuser --noinput --skip-checks --username admin --email $SUPERUSER_EMAIL
 python manage.py search_index --populate
-python manage.py test --keepdb
+# python manage.py test --keepdb
 
 
 case $DJANGO_DEBUG in

@@ -2,7 +2,6 @@ __pycache__
 .vscode
 .venv
 .env
-!/frontend/.env
 .mypy_cache
 .ruff_cache
 /backend/*/migrations/[0-9]*.py

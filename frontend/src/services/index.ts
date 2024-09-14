@@ -1,11 +1,10 @@
-import { CONFIG } from "src/config";
 import type { Error, HttpResponse } from "src/services/api";
 import { Api } from "src/services/api";
 
 export const limit = 10;
 
 export const api = new Api({
-  baseUrl: `${CONFIG.API_HOST}/api`,
+  baseUrl: String(import.meta.env.VITE_API_URL),
   securityWorker: (token) =>
     token ? { headers: { Authorization: `Token ${String(token)}` } } : {},
 });
