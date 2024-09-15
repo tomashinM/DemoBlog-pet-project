@@ -78,5 +78,5 @@ python manage.py populate_db [--articles ARTICLES] [--users USERS] [--tags TAGS]
 
 # Online Demo
 
-- [Сайт](https://timeweb.com/frontend/)
+- [Сайт](http://3460165-cq91236.twc1.net)
 - [Телеграм бот](https://t.me/DemoBlogByTomashinMbot)

@@ -36,7 +36,6 @@ services:
     volumes:
       - django-static:/app/static
       - certs:/app/certs
-      - ./backend:/app
     tty: true
     depends_on:
       postgres:
@@ -141,7 +140,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     environment:
-      - GF_SERVER_DOMAIN=${DOMAIN_NAME}
+      - GF_SERVER_ROOT_URL=${SITE_URL}/grafana
     depends_on:
       - prometheus
     # ports:
