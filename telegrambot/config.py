@@ -7,5 +7,5 @@ from redis import Redis
 from telebot import TeleBot
 
 redis_client = Redis.from_url("redis://redis:6379/2")
-api = API(ApiClient(Configuration(host=os.environ.get("API_URL"))))
+api = API(ApiClient(Configuration(host="http://django:8000")))
 bot = TeleBot(os.environ.get("TELEGRAM_TOKEN"))
