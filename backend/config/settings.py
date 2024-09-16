@@ -10,9 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", default=False)
+DEBUG = os.environ.get("DJANGO_DEBUG")
 
-ALLOWED_HOSTS = [os.environ.get("DOMAIN_NAME")]
+ALLOWED_HOSTS = [os.environ.get("DOMAIN_NAME"), "django"]
 
 
 # Application definition
