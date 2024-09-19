@@ -99,7 +99,7 @@ services:
       - .env
     restart: always
     entrypoint: celery
-    command: -A celery_app.app flower --url_prefix=/flower
+    command: -A celery_app.app flower --url_prefix=flower
     volumes:
       - ./backend:/app
     tty: true
@@ -113,7 +113,7 @@ services:
     env_file:
       - .env
     restart: always
-    command: locust --web-base-path=/locust
+    command: locust -H ${SITE_URL}
     volumes:
       - ./backend:/app
     depends_on:
@@ -238,11 +238,10 @@ services:
     volumes:
       - certs:/usr/share/kibana/config/certs
       - kibana-data:/usr/share/kibana/data
-    # ports:
-    #   - 5601:5601
+    ports:
+      - 5601:5601
     environment:
       - SERVER_BASEPATH=/kibana
-      - SERVER_REWRITEBASEPATH=true
       - SERVERNAME=kibana
       - ELASTICSEARCH_HOSTS=https://es01:9200
       - ELASTICSEARCH_USERNAME=kibana_system

@@ -25,7 +25,7 @@ jobs:
           docker compose -f docker-compose.ci.yml build
 
       - name: Start Docker Compose
-        run: docker compose -f docker-compose.ci.yml up -d --wait
+        run: docker compose -f docker-compose.ci.yml --progress quiet up -d --wait
 
       - name: Run Django tests
         run: |
@@ -79,7 +79,7 @@ jobs:
 
             # Build and start the containers
             docker compose build
-            docker compose up -d
+            docker compose --progress quiet up -d
 
             # Clean up
             docker system prune -af
