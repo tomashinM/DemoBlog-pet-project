@@ -21,7 +21,6 @@ services:
       - ./telegrambot:/app
     environment:
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
-      - API_URL=${API_URL}
     restart: always
     depends_on:
       - django
@@ -238,10 +237,11 @@ services:
     volumes:
       - certs:/usr/share/kibana/config/certs
       - kibana-data:/usr/share/kibana/data
-    ports:
-      - 5601:5601
+    # ports:
+    #   - 5601:5601
     environment:
       - SERVER_BASEPATH=/kibana
+      - SERVER_REWRITEBASEPATH=true
       - SERVERNAME=kibana
       - ELASTICSEARCH_HOSTS=https://es01:9200
       - ELASTICSEARCH_USERNAME=kibana_system
