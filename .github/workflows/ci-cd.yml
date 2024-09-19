@@ -83,5 +83,5 @@ jobs:
 
             # Clean up
             docker system prune -af
+            exit
           EOF
-          ssh -O exit $SSH_AUTH
