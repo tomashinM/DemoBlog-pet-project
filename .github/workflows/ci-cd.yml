@@ -57,7 +57,7 @@ jobs:
           ENV_FILE: ${{ secrets.ENV_FILE }}
           SSH_AUTH: ${{ secrets.SERVER_USERNAME }}@${{ secrets.DOMAIN_NAME }}
         run: |
-          ssh -tt $SSH_AUTH << EOF
+          ssh -tt -o ServerAliveInterval=300 $SSH_AUTH << EOF
             # Stop the existing Docker Compose project
             cd ~/app
             docker compose down || true
