@@ -107,14 +107,7 @@ class WebsiteUser(HttpUser):
                 }
             },
         )
-        print(response.json())
         slug = response.json()["article"]["slug"]
-        self.client.put(
-            f"/api/articles/{slug}",
-            json={
-                "article": {"title": "Updated Title", "body": "Updated Body"}
-            },
-        )
         self.client.get(f"/api/articles/{slug}")
         self.client.delete(f"/api/articles/{slug}")
 

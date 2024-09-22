@@ -112,7 +112,7 @@ services:
     env_file:
       - .env
     restart: always
-    command: locust -H ${SITE_URL}
+    command: locust -H http://django:8000
     volumes:
       - ./backend:/app
     depends_on:
