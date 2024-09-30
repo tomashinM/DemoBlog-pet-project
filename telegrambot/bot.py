@@ -1,10 +1,8 @@
 import json
-import re
-
-from telebot import types
 
 from config import api, bot
 from handlers import articles, callback_router
+from telebot import types
 from utils import send_or_edit
 
 
@@ -46,7 +44,7 @@ def search_command(message):
 
 
 def handle_search_reply(message):
-    articles(message, search=re.sub(r"[^a-zA-Z0-9\s\-_]", "", message.text)[:30])
+    articles(message, search=message.text[:30])
 
 
 @bot.callback_query_handler(func=lambda call: True)
